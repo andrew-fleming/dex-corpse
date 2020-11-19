@@ -5,11 +5,11 @@ const DexFarm = artifacts.require('DexFarm')
 module.exports = async function (deployer, network, accounts) {
 
   //deploy mockDai token
-  await deployer.deploy(MockDai, '100000000000000000000')
+  await deployer.deploy(MockDai, '1000000000000000000000')
   const mockDai = await MockDai.deployed()
 
   //deploy dexquisiteToken
-  await deployer.deploy(DexquisiteToken, '10000000000000000000000000')
+  await deployer.deploy(DexquisiteToken, '50000000000000000000000')
   const dexquisiteToken = await DexquisiteToken.deployed()
 
   //deploy dexFarm

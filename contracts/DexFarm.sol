@@ -2,20 +2,54 @@ pragma solidity ^0.6.0;
 
 import './DexquisiteToken.sol';
 import './MockDai.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-contract DexFarm {
+contract DexFarm is Ownable {
 
-    address public owner;
     string public name = 'DexFarm';
 
-    //staking
+    DexquisiteToken public dexquisiteToken;
+    MockDai public mockDai;
 
+    address[] public stakers;
+    mapping(address => uint256) public stakingBalance;
+    mapping(address => bool) public hasStaked;
+    mapping(address => bool) public isStaking;
+
+    constructor(DexquisiteToken _dexquisiteToken, MockDai _mockDai) public {
+        dexquisiteToken = _dexquisiteToken;
+        mockDai = _mockDai;
+    }
+
+    //staking
+    function stake(uint256 _amount) public {
+        require(_amount > 0, 'You cannot stake zero tokens');
+        mockDai.transferFrom(msg.sender, address(this), _amount);
+        stakingBalance[msg.sender] += _amount;
+        //if user hasn't staked, add them to array
+        if(!hasStaked[msg.sender]){
+            stakers.push(msg.sender);
+        }
+
+        hasStaked[msg.sender] = true;
+        isStaking[msg.sender] = true;
+    }
+
+    //issue tokens
+    function issueTokens() public onlyOwner {
+        for(uint i = 0; i < stakers.length; i++){
+            address recipient = stakers[i];
+            uint balance = stakingBalance[recipient];
+            if(balance > 0){
+                dexquisiteToken.transfer(recipient, balance);
+            }
+        }        
+    }
 
 
 
 
     //unstaking
-    //issuing tokens
 
 
 
