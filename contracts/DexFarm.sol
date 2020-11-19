@@ -46,11 +46,17 @@ contract DexFarm is Ownable {
         }        
     }
 
-
-
-
     //unstaking
+    function unstake() public {
+        require(isStaking[msg.sender] = true, 'You are not staking tokens');
+        
+        uint256 balance = stakingBalance[msg.sender];
+        require(balance > 0, 'You do not have funds to fetch');
+        stakingBalance[msg.sender] = 0;
+        mockDai.transfer(msg.sender, balance);
 
-
+        //update staking status
+        isStaking[msg.sender] = false;
+    }
 
 }

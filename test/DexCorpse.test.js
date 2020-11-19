@@ -16,7 +16,7 @@ function tokens(n) {
 }
 
 
-contract('DexFarm', ([owner, investor]) => {
+contract('DexFarm', ([owner, investor, investorTwo]) => {
     let mockDai, dexquisiteToken, dexFarm
 
     //recreate what should happen in migrations
@@ -28,7 +28,11 @@ contract('DexFarm', ([owner, investor]) => {
         //transfer dexquisiteToken to dexFarm
         await dexquisiteToken.transfer(dexFarm.address, tokens('5000000'))
 
-        await mockDai.transfer(investor, tokens('100'), {from: owner})
+        //transfer dai to investor
+        await mockDai.transfer(investor, tokens('100'), { from: owner })
+
+        //transfer dai to a different investor
+        await mockDai.transfer(investorTwo, tokens('125'), { from: owner })
     })
 
     describe('MockDai deployment', async() => {
@@ -60,14 +64,19 @@ contract('DexFarm', ([owner, investor]) => {
     describe('staking', async() => {
         let result
 
-        //check balance before staking
-        it('rewards users for staking', async() => {
+        it('rewards user for staking', async() => {
+
+            //check balance before staking
             result = await mockDai.balanceOf(investor)
             assert.equal(result.toString(), tokens('100'), 'balance prior to staking not correct')
+
+            //check second investor balance before staking
+            result = await mockDai.balanceOf(investorTwo)
+            assert.equal(result.toString(), tokens('125'), 'balance prior to staking not correct')
         
             //check approval and staking
-            await mockDai.approve(dexFarm.address, tokens('100'), {from: investor})
-            await dexFarm.stake(tokens('100'), {from: investor})
+            await mockDai.approve(dexFarm.address, tokens('100'), { from: investor })
+            await dexFarm.stake(tokens('100'), { from: investor })
 
             //check wallet balance of investor
             result = await mockDai.balanceOf(investor)
@@ -78,14 +87,33 @@ contract('DexFarm', ([owner, investor]) => {
             assert.equal(result.toString(), tokens('100'), 'staking balance not correct after staking')
 
             //issue tokens
-            await dexFarm.issueTokens({from: owner})
+            await dexFarm.issueTokens({ from: owner })
 
             //check balance after issuance
             result = await dexquisiteToken.balanceOf(investor)
             assert.equal(result.toString(), tokens('100'), 'investor was not rewarded correctly')
 
             //ensure only the owner can issue tokens
-            await dexFarm.issueTokens({from: investor}).should.be.rejected
+            await dexFarm.issueTokens({ from: investor }).should.be.rejected
+
+            //check balance before unstaking
+            result = await mockDai.balanceOf(investor)
+            assert.equal(result.toString(), '0')
+
+            //unstake
+            await dexFarm.unstake({ from: investor })
+
+            //check investor balance
+            result = await mockDai.balanceOf(investor)
+            assert.equal(result.toString(), tokens('100'))
+
+            //check staking balance
+            result = await dexFarm.stakingBalance(investor)
+            assert.equal(result.toString(), '0')
+
+            //check that user still has dexquisite tokens
+            result = await dexquisiteToken.balanceOf(investor)
+            assert.equal(result.toString(), tokens('100'))
         })
     })
 
