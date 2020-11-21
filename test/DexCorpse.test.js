@@ -91,7 +91,7 @@ contract('DexFarm', ([owner, investor, investorTwo]) => {
 
             //check balance after issuance
             result = await dexquisiteToken.balanceOf(investor)
-            assert.equal(result.toString(), tokens('100'), 'investor was not rewarded correctly')
+            assert.equal(result.toString(), tokens('5'), 'investor was not rewarded correctly')
 
             //ensure only the owner can issue tokens
             await dexFarm.issueTokens({ from: investor }).should.be.rejected
@@ -113,7 +113,7 @@ contract('DexFarm', ([owner, investor, investorTwo]) => {
 
             //check that user still has dexquisite tokens
             result = await dexquisiteToken.balanceOf(investor)
-            assert.equal(result.toString(), tokens('100'))
+            assert.equal(result.toString(), tokens('5'))
         })
     })
 

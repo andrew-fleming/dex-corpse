@@ -39,7 +39,8 @@ contract DexFarm is Ownable {
     function issueTokens() public onlyOwner {
         for(uint i = 0; i < stakers.length; i++){
             address recipient = stakers[i];
-            uint balance = stakingBalance[recipient];
+            //stakers receive 5% of their dai principle in dexquisite
+            uint balance = (stakingBalance[recipient] / 20);
             if(balance > 0){
                 dexquisiteToken.transfer(recipient, balance);
             }
