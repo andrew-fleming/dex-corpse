@@ -21,7 +21,10 @@ contract WordNFT is ERC721 {
         _wordExists[_word] = true;
     }
 
-
-
+    function mintClassA(string memory _word, uint256 _dxqCost) public {
+        require(dexquisiteToken.balanceOf(msg.sender) >= _dxqCost, 'You do not have enough DXQ tokens');
+        dexquisiteToken.transferFrom(msg.sender, address(this), _dxqCost);
+        mint(_word);
+    }
 
 }
