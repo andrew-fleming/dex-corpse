@@ -1,6 +1,7 @@
 const MockDai = artifacts.require('MockDai');
 const DexquisiteToken = artifacts.require('DexquisiteToken')
 const DexFarm = artifacts.require('DexFarm')
+const WordNFT = artifacts.require('WordNFT')
 
 module.exports = async function (deployer, network, accounts) {
 
@@ -16,4 +17,7 @@ module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(DexFarm, MockDai.address, DexquisiteToken.address)
   const dexFarm = await DexFarm.deployed()
 
+  //deploy wordNFT
+  await deployer.deploy(WordNFT, DexquisiteToken.address)
+  const wordNFT = await WordNFT.deployed()
 };
