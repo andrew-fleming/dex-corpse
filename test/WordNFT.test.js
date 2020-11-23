@@ -12,18 +12,18 @@ function tokens(n){
     return web3.utils.toWei(n, 'ether')
 }
 
-contract('WordNFT', ([owner, investor]) => {
+contract('WordNFT', ([owner, investor, brokeInvestor]) => {
     let dexquisiteToken, wordNFT
 
     before(async() => {
-        dexquisiteToken = await DexquisiteToken.new(tokens('10000'))
+        dexquisiteToken = await DexquisiteToken.new(tokens('100000'))
         wordNFT = await WordNFT.new(dexquisiteToken.address)
 
         //transfer tokens to wordNFT
         await dexquisiteToken.transfer(wordNFT.address, tokens('100'))
 
         //transfer dxq to investor
-        await dexquisiteToken.transfer(investor, tokens('500'))
+        await dexquisiteToken.transfer(investor, tokens('25000'))
     })
 
     describe('WordNFT Token deployment', async() => {
@@ -43,6 +43,70 @@ contract('WordNFT', ([owner, investor]) => {
         })
     })
 
+    describe('dxq/wordNFTs', async() => {
+        let result
+
+        it('accepts dxq payments', async() => {
+            result = await dexquisiteToken.balanceOf(investor)
+            assert.equal(result.toString(), tokens('25000'))
+        })
+
+        it('mints and accepts payments correctly', async() => {
+            //approval and mint
+            await dexquisiteToken.approve(wordNFT.address, tokens('250'), {from: investor})
+            await wordNFT.cClassMint('the', {from: investor})
+
+            //check supply
+            result = await wordNFT.totalSupply()
+            assert.equal(result.toString(), '1')
+
+            //check contract balance
+            result = await dexquisiteToken.balanceOf(wordNFT.address)
+            assert.equal(result.toString(), tokens('350'))
+
+            //check investor dqx balance
+            result = await dexquisiteToken.balanceOf(investor)
+            assert.equal(result.toString(), tokens('24750'))
+        })
+
+        it('should mint all classes for their respective cost', async() => {
+            //b class word
+            await dexquisiteToken.approve(wordNFT.address, tokens('1000'), {from: investor})
+            await wordNFT.bClassMint('waffles', {from: investor})
+
+            //a class word
+            await dexquisiteToken.approve(wordNFT.address, tokens('2500'), {from: investor})
+            await wordNFT.aClassMint('apoplexy', {from: investor})
+
+            //check supply
+            result = await wordNFT.totalSupply()
+            assert.equal(result.toString(), '3')
+        })
+
+        it('should revert mint calls from users without necessary funds', async() => {
+            //check balance of account[3]
+            result = await dexquisiteToken.balanceOf(brokeInvestor)
+            assert.equal(result.toString(), tokens('0'))
+
+            //broke investor should be denied
+            await dexquisiteToken.approve(wordNFT.address, tokens('250'), {from: brokeInvestor})
+            await wordNFT.cClassMint('hat', {from: brokeInvestor}).should.be.rejected
+
+            //insufficient approval should be denied the mint
+            await dexquisiteToken.approve(wordNFT.address, tokens('250'), {from: investor})
+            await wordNFT.aClassMint('reticent', {from: investor}).should.be.rejected
+        })
+    })
+
+    
+})
+
+
+
+
+
+
+/*
     describe('WordNFT minting', async() => {
         it('creates a new token', async() => {
             const result = await wordNFT.mint('hodl')
@@ -52,6 +116,7 @@ contract('WordNFT', ([owner, investor]) => {
             assert.equal(totalSupply, 1)
 
         })
+
 
         it('will not create the same word', async() => {
             await wordNFT.mint('hello')
@@ -102,4 +167,5 @@ contract('WordNFT', ([owner, investor]) => {
             assert.equal(result.toString(), tokens('150'))
         })
     })
-})
+
+*/
