@@ -95,6 +95,43 @@ contract('WordNFT', ([owner, investor, brokeInvestor]) => {
             //insufficient approval should be denied the mint
             await dexquisiteToken.approve(wordNFT.address, tokens('250'), {from: investor})
             await wordNFT.aClassMint('reticent', {from: investor}).should.be.rejected
+
+            //attempt to mint C class word with 4 letters
+            await dexquisiteToken.approve(wordNFT.address, tokens('1000'), {from: investor})
+            await wordNFT.cClassMint('dude', {from: investor}).should.be.rejected
+
+            //attempt to mint B class word with 3 letters
+            await dexquisiteToken.approve(wordNFT.address, tokens('250'), {from: investor})
+            await wordNFT.bClassMint('ass', {from: investor}).should.be.rejected
+
+            //attempt to mint A class word with 6 letters
+            await dexquisiteToken.approve(wordNFT.address, tokens('2500'), {from: investor})
+            await wordNFT.aClassMint('lovely', {from: investor}).should.be.rejected
+
+            //recheck minting works
+            await dexquisiteToken.approve(wordNFT.address, tokens('2500'), {from: owner})
+            await wordNFT.aClassMint('exquisite', {from: owner})
+        })
+    })
+
+    describe('index', async() => {
+        it('lists words', async() => {
+            let word
+            let result = []
+
+            //get total supply
+            const totalSupply = await wordNFT.totalSupply()
+            assert.equal(totalSupply.toString(), '4')
+
+            //loop through nfts and push each into result array
+            for(var i = 0; i < totalSupply; i++){
+                word = await wordNFT.words(i)
+                result.push(word)
+            }
+
+            //check expected array against the minted words
+            let expected = ['the', 'waffles', 'apoplexy', 'exquisite']
+            assert.equal(result.join(','), expected.join(','))
         })
     })
 

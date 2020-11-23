@@ -26,6 +26,10 @@ contract WordNFT is ERC721 {
     }
 
     function aClassMint(string memory _word) public {
+        //check length
+        uint _length = length(_word);
+        //input limit
+        require(_length >= 8, 'Class A wordNFT must be equal to or greater than 8 letters');
         //check user balance before transfer
         require(dexquisiteToken.balanceOf(msg.sender) >= A_CLASS_COST, 'You do not have enough DXQ tokens');
         //transfer
@@ -35,6 +39,10 @@ contract WordNFT is ERC721 {
     }
 
     function bClassMint(string memory _word) public {
+        //check length
+        uint _length = length(_word);
+        //input limit
+        require(_length >= 4 && _length <= 7, 'Class B wordNFT must equal or fall between 4 and 7 letters');
         //check user balance before transfer
         require(dexquisiteToken.balanceOf(msg.sender) >= B_CLASS_COST, 'You do not have enough DXQ tokens');
         //transfer
@@ -44,12 +52,21 @@ contract WordNFT is ERC721 {
     }
 
     function cClassMint(string memory _word) public {
+        //check length
+        uint _length = length(_word);
+        //input limit
+        require(_length <= 3, 'Class C wordNFT cannot exceed 3 letters');
         //check user balance before transfer
         require(dexquisiteToken.balanceOf(msg.sender) >= C_CLASS_COST, 'You do not have enough DXQ tokens');
         //transfer
         dexquisiteToken.transferFrom(msg.sender, address(this), C_CLASS_COST);
         //use mint function
         mint(_word);
+    }
+
+    function length(string memory _base) internal pure returns(uint) {
+        bytes memory _baseBytes = bytes(_base);
+        return _baseBytes.length;
     }
 
 }
